@@ -2,8 +2,9 @@ package com.example.CRUD.services;
 
 import com.example.CRUD.dto.CategoryDTO;
 import com.example.CRUD.entities.Category;
-import com.example.CRUD.services.exceptions.EntityNotFoundException;
+import com.example.CRUD.services.exceptions.ResourceNotFoundException;
 import com.example.CRUD.repositories.CategoryRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,8 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public CategoryDTO findById(Long id) {
         Optional<Category> obj = repository.findById(id);
-        Category entity = obj.orElseThrow(() -> new EntityNotFoundException("Entity not found"));
+//      Category entity = obj.get(); não trata exceção
+        Category entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
         return new CategoryDTO(entity);
     }
 
@@ -40,5 +42,20 @@ public class CategoryService {
         entity.setName(dto.getName());
         entity = repository.save(entity);
         return new CategoryDTO(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public CategoryDTO update(Long id, CategoryDTO dto) {
+        try {
+//            Category entity = repository.getOne(id); metodo deprecated
+//            Category entity = repository.getById(id); metodo deprecated
+            Category entity = repository.getReferenceById(id); // tb não funciona como esperado
+            entity.setName(dto.getName());
+            entity = repository.save(entity);
+            return new CategoryDTO(entity);
+        }
+        catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Id not found " + id);
+        }
     }
 }

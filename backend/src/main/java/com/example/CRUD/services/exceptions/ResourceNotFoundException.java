@@ -1,8 +1,8 @@
 package com.example.CRUD.services.exceptions;
 
-public class EntityNotFoundException extends RuntimeException{
+public class ResourceNotFoundException extends RuntimeException{
 
-    public EntityNotFoundException(String msg) {
+    public ResourceNotFoundException(String msg) {
         // repassa o argumento para a super classe
         super(msg);
     }
