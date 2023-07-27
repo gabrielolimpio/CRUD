@@ -52,7 +52,10 @@ public class CategoryService {
         try {
 //            Category entity = repository.getOne(id); metodo deprecated
 //            Category entity = repository.getById(id); metodo deprecated
-            Category entity = repository.getReferenceById(id); // tb não funciona como esperado
+//            Category entity = repository.getReferenceById(id);  tb não funciona como esperado
+
+            @SuppressWarnings("deprecation")
+            Category entity = repository.getOne(id);
             entity.setName(dto.getName());
             entity = repository.save(entity);
             return new CategoryDTO(entity);
