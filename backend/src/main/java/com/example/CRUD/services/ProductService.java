@@ -1,7 +1,10 @@
 package com.example.CRUD.services;
 
+import com.example.CRUD.dto.CategoryDTO;
 import com.example.CRUD.dto.ProductDTO;
+import com.example.CRUD.entities.Category;
 import com.example.CRUD.entities.Product;
+import com.example.CRUD.repositories.CategoryRepository;
 import com.example.CRUD.repositories.ProductRepository;
 import com.example.CRUD.services.exceptions.DatabaseException;
 import com.example.CRUD.services.exceptions.ResourceNotFoundException;
@@ -21,6 +24,9 @@ public class ProductService {
 
     @Autowired
     private ProductRepository repository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public Page<ProductDTO> findAllPaged(PageRequest pageRequest){
@@ -47,10 +53,12 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDTO insert(ProductDTO dto) {
         Product entity = new Product();
-//        entity.setName(dto.getName());
+        copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
         return new ProductDTO(entity);
     }
+
+
 
     @Transactional(readOnly = true)
     public ProductDTO update(Long id, ProductDTO dto) {
@@ -61,7 +69,7 @@ public class ProductService {
 
             @SuppressWarnings("deprecation")
             Product entity = repository.getOne(id);
-//            entity.setName(dto.getName());
+            copyDtoToEntity(dto, entity);
             entity = repository.save(entity);
             return new ProductDTO(entity);
         }
@@ -80,5 +88,24 @@ public class ProductService {
         catch (DataIntegrityViolationException e) {
             throw new DatabaseException("Integrity violation");
         }
+    }
+
+    private void copyDtoToEntity(ProductDTO dto, Product entity) {
+
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setDate(dto.getDate());
+        entity.setImgUrl(dto.getImgUrl());
+        entity.setPrice(dto.getPrice());
+
+        // limpar o conjunto que possam estar no conjunto entity
+        entity.getCategories().clear();
+
+        // percorre todas as categorias que estao associadas ao dto
+        for(CategoryDTO catDto : dto.getCategories()){
+            Category category = categoryRepository.getReferenceById(catDto.getId());
+            entity.getCategories().add(category);
+        }
+
     }
 }
